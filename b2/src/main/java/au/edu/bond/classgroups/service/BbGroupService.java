@@ -35,6 +35,8 @@ public class BbGroupService implements Cleanable {
                 Collection<Group> classGroups = bbGroupDAO.getByCourseId(courseId);
                 ConcurrentHashMap<Id, Group> groupMap = new ConcurrentHashMap<Id, Group>();
                 for (Group group : classGroups) {
+                    // populate the group's tools by using the getAvailableTools() function
+                    group.getAvailableTools();
                     groupMap.put(group.getId(), group);
                 }
                 return groupMap;
@@ -91,7 +93,11 @@ public class BbGroupService implements Cleanable {
     }
 
     public synchronized void createOrUpdate(Group group) throws ExecutionException {
-        bbGroupDAO.createOrUpdate(group);
+        try {
+            bbGroupDAO.createOrUpdate(group);
+        } catch (Exception e) {
+
+        }
 
         Id courseId = group.getCourseId();
         Map<Id, Group> groupMap = byIdCache.get(courseId);

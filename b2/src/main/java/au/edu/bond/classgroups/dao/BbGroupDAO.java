@@ -20,6 +20,7 @@ import java.util.Set;
 public class BbGroupDAO {
 
     GroupDbLoader groupDbLoader;
+    private GroupDbPersister groupDbPersister;
     CourseGroupManager courseGroupManager;
 
     public Group getById(Id id) throws PersistenceException {
@@ -38,8 +39,8 @@ public class BbGroupDAO {
         return getByCourseId(getIdFromLong(id));
     }
 
-    public void createOrUpdate(Group group) {
-        getCourseGroupManager().persistGroup(group);
+    public void createOrUpdate(Group group) throws PersistenceException, ValidationException {
+        getGroupDbPersister().persist(group);
     }
 
     public void delete(Id id) {
@@ -72,6 +73,11 @@ public class BbGroupDAO {
         return courseGroupManager;
     }
 
+    private GroupDbPersister getGroupDbPersister() throws PersistenceException {
+        if (groupDbPersister == null) {
+            groupDbPersister = GroupDbPersister.Default.getInstance();
+        }
 
-
+        return groupDbPersister;
+    }
 }
