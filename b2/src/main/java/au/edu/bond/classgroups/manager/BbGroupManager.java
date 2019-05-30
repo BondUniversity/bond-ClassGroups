@@ -240,7 +240,7 @@ public class BbGroupManager implements GroupManager {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.creatinggroupdebug",
                             group.getGroupId(), group.getCourseId(), bbGroup.getTitle(), memberIds.size()));
-                } else {
+                } else if (status == Status.UPDATED) {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.updatinggroupdebug",
                             group.getGroupId(), bbGroup.getId().toExternalString(), group.getCourseId(), courseId.toExternalString(), bbGroup.getTitle(), memberIds.size()));
