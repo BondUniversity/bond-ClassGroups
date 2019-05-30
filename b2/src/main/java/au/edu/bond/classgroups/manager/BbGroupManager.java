@@ -9,17 +9,20 @@ import au.edu.bond.classgroups.model.Member;
 import au.edu.bond.classgroups.service.*;
 import au.edu.bond.classgroups.util.EqualityUtil;
 import blackboard.base.FormattedText;
+import blackboard.data.ValidationException;
 import blackboard.data.course.AvailableGroupTool;
 import blackboard.data.course.Course;
 import blackboard.data.course.CourseMembership;
 import blackboard.data.course.GroupMembership;
 import blackboard.data.user.User;
 import blackboard.persist.Id;
+import blackboard.persist.PersistenceException;
 import blackboard.persist.PkId;
 import com.alltheducks.configutils.service.ConfigurationService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.NoResultException;
@@ -429,9 +432,10 @@ public class BbGroupManager implements GroupManager {
 
             try {
                 bbGroupService.createOrUpdate(bbGroupSet);
-            } catch (ExecutionException e) {
+            } catch (ExecutionException | PersistenceException | ValidationException e) {
                 taskLogger.error(resourceService.getLocalisationString(
                         "bond.classgroups.error.groupsetexecution", title, courseId), e);
+
                 return null;
             }
         }
