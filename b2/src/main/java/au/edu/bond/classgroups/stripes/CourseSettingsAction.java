@@ -111,11 +111,8 @@ public class CourseSettingsAction implements ActionBean {
             } else {
                 bbGroup.setTitle(groupExtension.getTitle());
             }
-            try {
-                bbGroupDAO.createOrUpdate(bbGroup);
-            } catch (Exception e) {
 
-            }
+             bbGroupDAO.createOrUpdate(bbGroup);
         }
 
         groupExtensionDAO.update(groupExtension);
