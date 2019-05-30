@@ -99,17 +99,15 @@ public class BbGroupService implements Cleanable {
 
         }
 
-        Id courseId = group.getCourseId();
-        Map<Id, Group> groupMap = byIdCache.get(courseId);
-        Map<String, Group> titleMap = byTitleCache.get(courseId);
-
-        groupMap.put(group.getId(), group);
-        titleMap.put(group.getTitle(), group);
+        addGroupToCache(group);
     }
 
     public synchronized void createOrUpdate(Group group, Set<Id> courseMembershipIds) throws ExecutionException {
         bbGroupDAO.createOrUpdate(group, courseMembershipIds);
+        addGroupToCache(group);
+    }
 
+    private void addGroupToCache(Group group) {
         Id courseId = group.getCourseId();
         Map<Id, Group> groupMap = byIdCache.get(courseId);
         Map<String, Group> titleMap = byTitleCache.get(courseId);
