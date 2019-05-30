@@ -87,7 +87,7 @@ public class BbGroupService implements Cleanable {
         addGroupToCache(group);
     }
 
-    public synchronized void createOrUpdate(Group group, Set<Id> courseMembershipIds) throws ExecutionException {
+    public synchronized void createOrUpdate(Group group, Set<Id> courseMembershipIds) throws ExecutionException, PersistenceException, ValidationException {
         bbGroupDAO.createOrUpdate(group, courseMembershipIds);
         addGroupToCache(group);
     }
