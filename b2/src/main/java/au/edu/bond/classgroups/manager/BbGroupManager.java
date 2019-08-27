@@ -22,7 +22,6 @@ import com.alltheducks.configutils.service.ConfigurationService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.NoResultException;
@@ -273,7 +272,7 @@ public class BbGroupManager implements GroupManager {
         if (extNew) {
             try {
                 groupExtensionService.create(ext);
-            } catch (ExecutionException e) {
+            } catch (RuntimeException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.failedextcreate", group.getGroupId(), courseId), e);
                 return Status.ERROR;
