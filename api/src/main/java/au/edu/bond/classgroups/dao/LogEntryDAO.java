@@ -83,10 +83,10 @@ public class LogEntryDAO implements Closeable {
             entityManager.persist(entry);
             entityTransaction.commit();
         } catch(RuntimeException e) {
-            if(entityTransaction != null) {
+            if (entityTransaction != null) {
                 try {
                     entityTransaction.rollback();
-                } catch(RuntimeException ignored) {
+                } catch (RuntimeException ignored) {
                 }
             }
             throw e;
