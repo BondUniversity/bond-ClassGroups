@@ -6,11 +6,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -36,7 +31,7 @@ public class GroupExtensionService implements Cleanable {
         return byIdCache.get(externalId);
     }
 
-    public void create(GroupExtension groupExtension) throws ExecutionException {
+    public void create(GroupExtension groupExtension) throws RuntimeException {
         groupExtensionDAO.create(groupExtension);
         byIdCache.put(groupExtension.getExternalSystemId(), groupExtension);
     }
