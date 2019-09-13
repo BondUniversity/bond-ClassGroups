@@ -18,7 +18,6 @@ import java.util.Set;
 public class BbGroupDAO {
 
     private GroupDbLoader groupDbLoader;
-    //private GroupDbPersister groupDbPersister;
     private CourseGroupManager courseGroupManager;
 
     public Group getById(Id id) throws PersistenceException {

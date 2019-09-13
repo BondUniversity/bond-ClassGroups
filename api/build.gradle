@@ -1,5 +1,5 @@
 apply plugin: 'java'
-version = '2.1.15'
+version = '2.1.19'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
