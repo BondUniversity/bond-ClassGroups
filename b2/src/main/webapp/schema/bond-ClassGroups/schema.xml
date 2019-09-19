@@ -65,7 +65,7 @@
         <column name="task_pk1" data-type="int" nullable="false" />
         <column name="logged_date" data-type="datetime" nullable="false" />
         <column name="log_level" data-type="nvarchar(10)" nullable="false" />
-        <column name="message" data-type="nvarchar(255)" nullable="false" />
+        <column name="message" data-type="nvarchar(500)" nullable="false" />
         <column name="stacktrace" data-type="ntext" nullable="true" />
         <primary-key name="bond_ClassGroups_log_pk">
             <columnref name="pk1" />

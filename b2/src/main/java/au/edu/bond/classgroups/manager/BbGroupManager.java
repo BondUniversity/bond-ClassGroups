@@ -251,7 +251,7 @@ public class BbGroupManager implements GroupManager {
 
             try {
                 bbGroupService.createOrUpdate(bbGroup, memberIds);
-            } catch (ExecutionException | PersistenceException | ValidationException e) {
+            } catch (ExecutionException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
                 return Status.ERROR;
