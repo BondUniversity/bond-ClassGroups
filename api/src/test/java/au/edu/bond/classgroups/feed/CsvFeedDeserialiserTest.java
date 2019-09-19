@@ -41,7 +41,7 @@ public class CsvFeedDeserialiserTest {
         taskLogger = mock(TaskLogger.class);
         resourceService = mock(ResourceService.class);
 
-        when(resourceService.getLocalisationString(anyString(), anyCollection())).thenReturn("blahblah");
+        when(resourceService.getLocalisationString(anyString(), any())).thenReturn("blahblah");
 
         csvFeedDeserialiser = new CsvFeedDeserialiser();
         csvFeedDeserialiser.setResourceService(resourceService);

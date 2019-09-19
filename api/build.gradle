@@ -1,8 +1,9 @@
 apply plugin: 'java'
-version = '2.1.19'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version = rootProject.version
 
 repositories {
     mavenCentral()
@@ -10,7 +11,7 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.11',
-                'org.mockito:mockito-all:1.9.5'
+                'org.mockito:mockito-core:2.28.2'
 
     compile 'commons-io:commons-io:2.4',
             'commons-lang:commons-lang:2.6',
@@ -19,7 +20,7 @@ dependencies {
             'org.springframework:spring-beans:4.3.0.RELEASE',
             'org.springframework:spring-context:4.3.0.RELEASE',
             'com.thoughtworks.xstream:xstream:1.4.7',
-            files("../lib/b2-config-utils-1.0.3.jar"),
+            files("../lib/b2-config-utils-1.2.2.jar"),
             'com.google.guava:guava:16.0'
 
 }
@@ -28,3 +29,4 @@ jar {
     // Changes the produced WAR files name to the name of the root project.
     baseName rootProject.name + '-' + project.name
 }
+

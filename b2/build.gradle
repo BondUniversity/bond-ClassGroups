@@ -1,13 +1,11 @@
 apply plugin: 'war'
-version = getB2Version()
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
+version = rootProject.version
 
 ext {
-//    deployServer = "bb-app-dev.ad.bond.edu.au"
-//    deployInstance = "BBLEARN"
     deployServer = "localhost:9876"
     deployInstance = "BBLEARN"
 }
@@ -24,16 +22,11 @@ repositories {
 }
 
 dependencies {
-    providedCompile 'blackboard.platform:bb-platform:9.1.140152.0',
-                    'blackboard.platform:bb-taglibs:9.1.140152.0',
+    providedCompile 'blackboard.platform:bb-platform:3400.0.0',
+                    'blackboard.platform:bb-taglibs:3400.0.0',
                     'javax.servlet:servlet-api:2.5',
                     'jstl:jstl:1.2',
                     'com.google.guava:guava:16.0'
-
-//    compile 'org.slf4j:slf4j-api:1.7.5'
-//    compile 'org.slf4j:jul-to-slf4j:1.7.5'
-//    compile 'org.slf4j:log4j-over-slf4j:1.7.21'
-//    compile 'ch.qos.logback:logback-classic:1.1.3'
 
     compile 'javax.inject:javax.inject:1',
             'org.springframework:spring-orm:4.3.0.RELEASE',
@@ -46,8 +39,7 @@ dependencies {
             'com.google.code.gson:gson:2.2.4'
 
     compile 'net.sourceforge.stripes:stripes:1.5.7',
-            files('../lib/bb-stripes-utils-1.0.0.jar')//,
-//            files('../lib/b2-config-utils-1.0.3.jar')
+            files('../lib/bb-stripes-utils-1.1.3.jar')
 
     compile project(':api')
 
@@ -65,14 +57,9 @@ war {
 
 build.dependsOn(project(':api').build);
 
-// Determines the building block version based from the bb-manifest.xml file
-String getB2Version() {
-    File mfFile = new File(file(webAppDir), 'WEB-INF/bb-manifest.xml');
-    def manifest = new XmlSlurper().parse(mfFile);
-    return manifest.plugin.version['@value'];
-}
-
-task deployB2( dependsOn: "build" ) << {
-    ant.taskdef( name: "b2deploy", classname: "org.oscelot.ant.B2DeployTask", classpath: project.configurations.deployB2.asPath )
-    ant.b2deploy( localfilepath: project.war.archivePath, host: project.ext.deployServer, courseorgavailable: 'true', clean: 'true', webappName: 'bb-starting-block-' + project.ext.deployInstance )
+task deployB2( dependsOn: "build" ) {
+    doLast {
+        ant.taskdef(name: "b2deploy", classname: "org.oscelot.ant.B2DeployTask", classpath: project.configurations.deployB2.asPath)
+        ant.b2deploy(localfilepath: project.war.archivePath, host: project.ext.deployServer, courseorgavailable: 'true', clean: 'true', webappName: 'bb-starting-block-' + project.ext.deployInstance)
+    }
 }

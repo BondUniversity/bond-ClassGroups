@@ -1,1 +1,10 @@
 apply plugin: 'base'
+
+version = getB2Version()
+
+// Determines the building block version based from the bb-manifest.xml file
+String getB2Version() {
+    File mfFile = new File(file(project(":b2").projectDir), 'src/main/webapp/WEB-INF/bb-manifest.xml');
+    def manifest = new XmlSlurper().parse(mfFile);
+    return manifest.plugin.version['@value'];
+}
