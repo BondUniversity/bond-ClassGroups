@@ -22,6 +22,10 @@ repositories {
 }
 
 dependencies {
+    def tomcatVersion = '8.5.47'
+    providedCompile "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
     providedCompile 'blackboard.platform:bb-platform:3700.99.0',
                     'blackboard.platform:bb-taglibs:3700.99.0',
                     'javax.servlet:javax.servlet-api:3.0.1',
@@ -61,11 +65,6 @@ dependencies {
                 'org.mockito:mockito-core:2.28.2'
 }
 
-war {
-    // Changes the produced WAR files name to the name of the root project.
-    baseName rootProject.name
-}
-
 build.dependsOn(project(':api').build);
 
 task deployB2( dependsOn: "build" ) {
@@ -73,4 +72,43 @@ task deployB2( dependsOn: "build" ) {
         ant.taskdef(name: "b2deploy", classname: "org.oscelot.ant.B2DeployTask", classpath: project.configurations.deployB2.asPath)
         ant.b2deploy(localfilepath: project.war.archivePath, host: project.ext.deployServer, courseorgavailable: 'true', clean: 'true', webappName: 'bb-starting-block-' + project.ext.deployInstance)
     }
+}
+
+
+ant.taskdef(name: 'jasper', classname: 'org.apache.jasper.JspC', classpath: configurations.runtime.asPath)
+
+task tomcatJasper() {
+    inputs.dir("src/main/webapp")
+    outputs.dir("$buildDir/jasper")
+    outputs.file("${buildDir}/generated_web.xml")
+
+    doLast {
+        mkdir("$buildDir")
+
+        copy {
+            from "src/main/webapp"
+            into "$buildDir/webapp"
+        }
+
+        ant.jasper(webXmlFragment: file("${buildDir}/generated_web.xml"),
+                addWebXmlMappings: true,
+                package: "au.edu.bond.classgroups.generatedjsps",
+                uriRoot: "$buildDir/webapp",
+                outputDir: "$buildDir/jasper")
+
+    }
+}
+war {
+    webAppDirName = file("$buildDir/webapp")
+    baseName rootProject.name
+
+}
+sourceSets {
+    jsp {
+        java.srcDir "${buildDir}/jasper/"
+    }
+}
+compileJava {
+    dependsOn("tomcatJasper")
+    source += sourceSets.jsp.java
 }
