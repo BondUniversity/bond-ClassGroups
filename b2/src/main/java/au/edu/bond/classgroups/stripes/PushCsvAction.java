@@ -30,11 +30,7 @@ import java.util.regex.Pattern;
 public class PushCsvAction implements ActionBean {
 
     private ActionBeanContext context;
-    private static Pattern runIdPattern;
-
-    static {
-        runIdPattern = Pattern.compile("[a-zA-Z0-9]+");
-    }
+    private static Pattern runIdPattern = Pattern.compile("[a-zA-Z0-9]+");
 
     private DirectoryFactory directoryFactory;
     private TaskService taskService;
