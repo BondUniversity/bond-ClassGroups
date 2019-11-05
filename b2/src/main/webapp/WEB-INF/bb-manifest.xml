@@ -136,10 +136,11 @@
             <permission type="java.lang.RuntimePermission" name="createClassLoader" />
             <permission type="java.lang.RuntimePermission" name="setContextClassLoader" />
             <permission type="java.io.FilePermission" name="${java.home}/lib/*" actions="read" />
-            <permission type="java.util.PropertyPermission" name="jboss.i18n.generate-proxies" actions="write" />
             <permission type="java.lang.RuntimePermission" name="getenv.spring.liveBeansView.mbeanDomain" />
             <permission type="java.lang.RuntimePermission" name="getProtectionDomain" />
             <permission type="java.lang.RuntimePermission" name="modifyThread" />
+            <permission type="java.lang.RuntimePermission" name="getStackWalkerWithClassReference" />
+            <permission type="java.lang.RuntimePermission" name="defineClass" />
 
             <permission type="attribute" name="user.*" actions="get" />
 

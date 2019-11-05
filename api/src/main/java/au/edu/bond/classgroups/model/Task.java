@@ -27,7 +27,7 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "bond_classgroups_task_seq")
-    @SequenceGenerator(name="bond_classgroups_task_seq", sequenceName = "bond_classgroups_task_seq")
+    @SequenceGenerator(name="bond_classgroups_task_seq", sequenceName = "bond_classgroups_task_seq", allocationSize = 1)
     @Column(name="pk1")
     public Long getId() {
         return id;
