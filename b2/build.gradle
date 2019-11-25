@@ -6,7 +6,7 @@ targetCompatibility = 1.8
 version = rootProject.version
 
 ext {
-    deployServer = "localhost:9876"
+    deployServer = "http://localhost:9876"
     deployInstance = "BBLEARN"
 }
 
@@ -22,37 +22,47 @@ repositories {
 }
 
 dependencies {
-    providedCompile 'blackboard.platform:bb-platform:3400.0.0',
-                    'blackboard.platform:bb-taglibs:3400.0.0',
-                    'javax.servlet:servlet-api:2.5',
+    def tomcatVersion = '8.5.47'
+    providedCompile "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
+    providedCompile 'blackboard.platform:bb-platform:3700.99.0',
+                    'blackboard.platform:bb-taglibs:3700.99.0',
+                    'javax.servlet:javax.servlet-api:3.0.1',
                     'jstl:jstl:1.2',
                     'com.google.guava:guava:16.0'
 
-    compile 'javax.inject:javax.inject:1',
-            'org.springframework:spring-orm:4.3.0.RELEASE',
-            'org.springframework:spring-beans:4.3.0.RELEASE',
-            'org.springframework:spring-context:4.3.0.RELEASE',
-            'org.springframework:spring-web:4.3.0.RELEASE',
-            'org.hibernate:hibernate-core:4.3.11.Final',
-            'org.hibernate:hibernate-entitymanager:4.3.11.Final',
-            'blackboard.platform:bb-spring-webapi:10.1',
-            'com.google.code.gson:gson:2.2.4'
+    compile 'org.slf4j:slf4j-api:1.7.28'
+    compile 'org.slf4j:jul-to-slf4j:1.7.28'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'org.slf4j:log4j-over-slf4j:1.7.28'
 
-    compile 'net.sourceforge.stripes:stripes:1.5.7',
-            files('../lib/bb-stripes-utils-1.1.3.jar')
+    compile 'javax.inject:javax.inject:1',
+            'org.springframework:spring-orm:5.2.1.RELEASE',
+            'org.springframework:spring-beans:5.2.1.RELEASE',
+            'org.springframework:spring-context:5.2.1.RELEASE',
+            'org.springframework:spring-web:5.2.1.RELEASE',
+            'blackboard.platform:bb-spring-webapi:3700.99.0',
+            'com.google.code.gson:gson:2.8.6'
+
+    compile ('org.hibernate:hibernate-core:5.4.7.Final') {
+        exclude group: 'xml-apis', module: 'xml-apis'
+    }
+
+    compile ('net.sourceforge.stripes:stripes:1.6.0') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'log4j', module: 'log4j'
+    }
+    compile files('../lib/bb-stripes-utils-1.1.3.jar')
+    compile files('../lib/b2-logging-utils-1.0.2.jar')
 
     compile project(':api')
 
     //Ant deploy
     deployB2 "org.oscelot:b2deploy-task:0.1.0"
 
-    testCompile 'junit:junit:4.11',
-                'org.mockito:mockito-all:1.9.5'
-}
-
-war {
-    // Changes the produced WAR files name to the name of the root project.
-    baseName rootProject.name
+    testCompile 'junit:junit:4.12',
+                'org.mockito:mockito-core:2.28.2'
 }
 
 build.dependsOn(project(':api').build);
@@ -62,4 +72,43 @@ task deployB2( dependsOn: "build" ) {
         ant.taskdef(name: "b2deploy", classname: "org.oscelot.ant.B2DeployTask", classpath: project.configurations.deployB2.asPath)
         ant.b2deploy(localfilepath: project.war.archivePath, host: project.ext.deployServer, courseorgavailable: 'true', clean: 'true', webappName: 'bb-starting-block-' + project.ext.deployInstance)
     }
+}
+
+
+ant.taskdef(name: 'jasper', classname: 'org.apache.jasper.JspC', classpath: configurations.runtime.asPath)
+
+task tomcatJasper() {
+    inputs.dir("src/main/webapp")
+    outputs.dir("$buildDir/jasper")
+    outputs.file("${buildDir}/generated_web.xml")
+
+    doLast {
+        mkdir("$buildDir")
+
+        copy {
+            from "src/main/webapp"
+            into "$buildDir/webapp"
+        }
+
+        ant.jasper(webXmlFragment: file("${buildDir}/generated_web.xml"),
+                addWebXmlMappings: true,
+                package: "au.edu.bond.classgroups.generatedjsps",
+                uriRoot: "$buildDir/webapp",
+                outputDir: "$buildDir/jasper")
+
+    }
+}
+war {
+    webAppDirName = file("$buildDir/webapp")
+    baseName rootProject.name
+
+}
+sourceSets {
+    jsp {
+        java.srcDir "${buildDir}/jasper/"
+    }
+}
+compileJava {
+    dependsOn("tomcatJasper")
+    source += sourceSets.jsp.java
 }

@@ -2,9 +2,7 @@ package au.edu.bond.classgroups.dao;
 
 import au.edu.bond.classgroups.model.Task;
 import au.edu.bond.classgroups.util.DbUtil;
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 
