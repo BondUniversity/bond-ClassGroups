@@ -26,8 +26,8 @@ dependencies {
     providedCompile "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
             "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
 
-    providedCompile 'blackboard.platform:bb-platform:3700.99.0',
-                    'blackboard.platform:bb-taglibs:3700.99.0',
+    providedCompile 'blackboard.platform:bb-platform:3700.14.0',
+                    'blackboard.platform:bb-taglibs:3700.14.0',
                     'javax.servlet:javax.servlet-api:3.0.1',
                     'jstl:jstl:1.2',
                     'com.google.guava:guava:16.0'
@@ -42,7 +42,7 @@ dependencies {
             'org.springframework:spring-beans:5.2.1.RELEASE',
             'org.springframework:spring-context:5.2.1.RELEASE',
             'org.springframework:spring-web:5.2.1.RELEASE',
-            'blackboard.platform:bb-spring-webapi:3700.99.0',
+            'blackboard.platform:bb-spring-webapi:3700.14.0',
             'com.google.code.gson:gson:2.8.6'
 
     compile ('org.hibernate:hibernate-core:5.4.7.Final') {

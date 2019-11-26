@@ -83,7 +83,6 @@
                                     selectMultiple="false"
                                     javascriptName="handleOverriddenUserSelect"
                                     label="${selectUserButton}"
-                                    hideGuest="true"
                                     />
                         </div>
                         <input type="hidden" name="newOverriddenLeader" id="newOverriddenLeader" value="" />
