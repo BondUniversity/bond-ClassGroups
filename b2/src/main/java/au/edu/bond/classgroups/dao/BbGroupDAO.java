@@ -6,8 +6,8 @@ import blackboard.persist.Id;
 import blackboard.persist.PersistenceException;
 import blackboard.persist.course.GroupDbLoader;
 import blackboard.persist.course.GroupDbPersister;
-import blackboard.platform.course.CourseGroupManager;
-import blackboard.platform.course.CourseGroupManagerFactory;
+import blackboard.persist.course.GroupMembershipDbPersister;
+import blackboard.data.course.GroupMembership;
 
 import java.util.Collection;
 import java.util.Set;
@@ -18,7 +18,8 @@ import java.util.Set;
 public class BbGroupDAO {
 
     private GroupDbLoader groupDbLoader;
-    private CourseGroupManager courseGroupManager;
+    private GroupDbPersister groupDbPersister;
+    private GroupMembershipDbPersister groupMembershipDbPersister;
 
     public Group getById(Id id) throws PersistenceException {
         return getGroupDbLoader().loadById(id);
@@ -32,16 +33,29 @@ public class BbGroupDAO {
         return getGroupDbLoader().loadGroupsAndSetsByCourseId(id);
     }
 
-    public void createOrUpdate(Group group) {
-        getCourseGroupManager().persistGroup(group);
+    public void createOrUpdate(Group group) throws PersistenceException, ValidationException {
+        getGroupDbPersister().persist(group);
     }
 
-    public void delete(Id id) {
-        getCourseGroupManager().deleteGroup(id);
+    public void delete(Id id) throws PersistenceException {
+        getGroupDbPersister().deleteById(id);
     }
 
-    public void createOrUpdate(Group group, Set<Id> courseMembershipIds) {
-        getCourseGroupManager().persistGroupAndEnroll(group, courseMembershipIds);
+    public void addMembers(Group group, Set<Id> courseMembershipIds) throws ValidationException, PersistenceException {
+        for (Id courseMembershipId : courseMembershipIds) {
+            GroupMembership groupMembership = new GroupMembership();
+
+            groupMembership.setCourseMembershipId(courseMembershipId);
+            groupMembership.setGroupId(group.getId());
+
+            getGroupMembershipDbPersister().persist(groupMembership);
+        }
+    }
+
+    public void deleteMembers(Group group, Set<Id> groupMembershipIds) throws PersistenceException {
+        for (Id groupMembershipId : groupMembershipIds) {
+            getGroupMembershipDbPersister().deleteById(groupMembershipId);
+        }
     }
 
     private Id getIdFromLong(long id) {
@@ -55,10 +69,19 @@ public class BbGroupDAO {
         return groupDbLoader;
     }
 
-    private CourseGroupManager getCourseGroupManager() {
-        if(courseGroupManager == null) {
-            courseGroupManager = CourseGroupManagerFactory.getInstance();
+    private GroupDbPersister getGroupDbPersister() throws PersistenceException {
+        if (groupDbPersister == null) {
+            groupDbPersister = GroupDbPersister.Default.getInstance();
         }
-        return courseGroupManager;
+
+        return groupDbPersister;
+    }
+
+    private GroupMembershipDbPersister getGroupMembershipDbPersister() throws PersistenceException {
+        if (groupMembershipDbPersister == null) {
+            groupMembershipDbPersister = GroupMembershipDbPersister.Default.getInstance();
+        }
+
+        return groupMembershipDbPersister;
     }
 }

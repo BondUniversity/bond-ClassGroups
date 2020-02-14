@@ -170,12 +170,29 @@ public class BbGroupManager implements GroupManager {
             }
         }
 
-        final List<GroupMembership> groupMemberships = bbGroup.getGroupMemberships();
-        HashSet<Id> existingGroupMembers = Sets.newHashSetWithExpectedSize(groupMemberships.size());
-        for (GroupMembership groupMembership : groupMemberships) {
-            existingGroupMembers.add(groupMembership.getCourseMembershipId());
+        // TODO: Need to clean up exceptions
+        try {
+            bbGroupService.createOrUpdate(bbGroup);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+        } catch (ValidationException e) {
+            e.printStackTrace();
         }
 
+        // We Could use the status above to determine if we create a group or update one...
+
+        // Below we are starting to look at the group memberships
+
+        final List<GroupMembership> groupMemberships = bbGroup.getGroupMemberships();
+        HashMap<Id, Id> existingGroupMembers = new HashMap<>();
+
+        for (GroupMembership groupMembership : groupMemberships) {
+            existingGroupMembers.put(groupMembership.getCourseMembershipId(), groupMembership.getId());
+        }
+
+        // Not sure here but I think we are getting the group details provided by the feed, and extracting the user IDs...
         final Collection<Member> members = group.getMembers();
         final Set<String> feedMembers = Sets.newHashSetWithExpectedSize(members != null ? members.size() : 1);
         if (members != null) {
@@ -188,7 +205,8 @@ public class BbGroupManager implements GroupManager {
             feedMembers.add(group.getLeaderId());
         }
 
-        Set<Id> memberIds = new HashSet<>();
+        Set<Id> membersToAdd = new HashSet<>();
+        Set<Id> membersUpdated = new HashSet<>();
 
         for (String feedMember : feedMembers) {
             final User user;
@@ -221,17 +239,24 @@ public class BbGroupManager implements GroupManager {
                 continue;
             }
 
+            // If the member that is in the feed, is already in the group, prepare to remove them from the group...
             final Id membershipId = membership.getId();
-            final boolean foundInExisting = existingGroupMembers.remove(membershipId);
+            boolean foundInExisting = false;
+
+            if (existingGroupMembers.containsKey(membershipId)) {
+                foundInExisting = true;
+                existingGroupMembers.remove(membershipId);
+            }
 
             if (!foundInExisting) {
                 status = Status.UPDATED;
+                membersToAdd.add(membershipId);
             }
 
-            memberIds.add(membershipId);
+            membersUpdated.add(membershipId);
         }
 
-        if (!existingGroupMembers.isEmpty()) {
+        if (!membersToAdd.isEmpty()) {
             status = Status.UPDATED;
         }
 
@@ -241,21 +266,37 @@ public class BbGroupManager implements GroupManager {
                 if (status == Status.CREATED) {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.creatinggroupdebug",
-                            group.getGroupId(), group.getCourseId(), bbGroup.getTitle(), memberIds.size()));
+                            group.getGroupId(), group.getCourseId(), bbGroup.getTitle(), membersUpdated.size()));
                 } else if (status == Status.UPDATED) {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.updatinggroupdebug",
-                            group.getGroupId(), bbGroup.getId().toExternalString(), group.getCourseId(), courseId.toExternalString(), bbGroup.getTitle(), memberIds.size()));
+                            group.getGroupId(), bbGroup.getId().toExternalString(), group.getCourseId(), courseId.toExternalString(), bbGroup.getTitle(), membersUpdated.size()));
                 }
             }
 
-            try {
-                bbGroupService.createOrUpdate(bbGroup, memberIds);
-            } catch (ExecutionException e) {
+           // try {
+                // TODO: Need to tidy up the try catch below
+                try {
+                    // Add members
+                    bbGroupService.addMembers(bbGroup, membersToAdd);
+                } catch (ValidationException e) {
+                    e.printStackTrace();
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                }
+
+                // TODO: Need to tidy up the try catch below
+                try {
+                    // Delete members
+                    bbGroupService.deleteMembers(bbGroup, (Set) existingGroupMembers.values());
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                }
+            /*} catch (ExecutionException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
                 return Status.ERROR;
-            }
+            }*/
         }
 
         Long internalId = ((PkId) bbGroup.getId()).getKey();
