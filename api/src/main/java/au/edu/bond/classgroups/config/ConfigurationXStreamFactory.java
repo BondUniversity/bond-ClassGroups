@@ -27,6 +27,9 @@ public class ConfigurationXStreamFactory {
 
         xstream.ignoreUnknownElements();
 
+        XStream.setupDefaultSecurity(xstream);
+        xstream.allowTypes(new Class[]{Configuration.class});
+
         return xstream;
     }
 
