@@ -170,15 +170,20 @@ public class BbGroupManager implements GroupManager {
             }
         }
 
-        // TODO: Need to clean up exceptions
         try {
             bbGroupService.createOrUpdate(bbGroup);
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.getgroupinfofromcache", group.getGroupId()), e);
+            return Status.ERROR;
         } catch (PersistenceException e) {
-            e.printStackTrace();
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
+            return Status.ERROR;
         } catch (ValidationException e) {
-            e.printStackTrace();
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
+            return Status.ERROR;
         }
 
 
@@ -290,7 +295,6 @@ public class BbGroupManager implements GroupManager {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
                 return Status.ERROR;
-            }
         }
 
         Long internalId = ((PkId) bbGroup.getId()).getKey();
