@@ -279,29 +279,18 @@ public class BbGroupManager implements GroupManager {
                 }
             }
 
-           // try {
-                // TODO: Need to tidy up the try catch below
-                try {
-                    bbGroupService.addMembers(bbGroup, membersToAdd);
-                } catch (ValidationException e) {
-                    e.printStackTrace();
-                } catch (PersistenceException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
-                } catch (PersistenceException e) {
-                    e.printStackTrace();
-                }
-            /*} catch (ExecutionException e) {
-                taskLogger.warning(resourceService.getLocalisationString(
-                        "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
-                return Status.ERROR;
+            try {
+                bbGroupService.addMembers(bbGroup, membersToAdd);
+                bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
             } catch (PersistenceException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
                 return Status.ERROR;
+            } catch (ValidationException e) {
+                taskLogger.warning(resourceService.getLocalisationString(
+                        "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
+                return Status.ERROR;
+            }
         }
 
         Long internalId = ((PkId) bbGroup.getId()).getKey();
