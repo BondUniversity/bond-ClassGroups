@@ -125,7 +125,7 @@ public class BbSmartViewManager implements SmartViewManager {
         ext.setCustomViewId(gradebookCustomViewId);
         try {
             groupExtensionService.update(ext, ((PkId) courseId).getKey());
-        } catch (ExecutionException e) {
+        } catch (RuntimeException e) {
             taskLogger.warning(resourceService.getLocalisationString(
                     "bond.classgroups.warning.failedextupdate", group.getGroupId(), courseId), e);
             return;

@@ -36,12 +36,12 @@ public class GroupExtensionService implements Cleanable {
         byIdCache.put(groupExtension.getExternalSystemId(), groupExtension);
     }
 
-    public void update(GroupExtension groupExtension, long courseId) throws ExecutionException {
+    public void update(GroupExtension groupExtension, long courseId) {
         groupExtensionDAO.update(groupExtension);
         byIdCache.put(groupExtension.getExternalSystemId(), groupExtension);
     }
 
-    public void delete(GroupExtension groupExtension, long courseId) throws ExecutionException {
+    public void delete(GroupExtension groupExtension, long courseId) {
         groupExtensionDAO.delete(groupExtension);
         byIdCache.invalidate(groupExtension.getExternalSystemId());
     }
