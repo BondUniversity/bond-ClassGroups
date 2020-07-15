@@ -192,33 +192,55 @@ public class BbGroupManager implements GroupManager {
             existingGroupMembers.put(groupMembership.getCourseMembershipId(), groupMembership.getId());
         }
 
+        // DEBUG: LIST THE EXISTING GROUP MEMBERS HERE
+        Iterator egmIterator = existingGroupMembers.entrySet().iterator();
+
+        taskLogger.info("Existing Group Members");
+
+        while (egmIterator.hasNext()) {
+            Map.Entry mapElement = (Map.Entry) egmIterator.next();
+            Id entry = (Id) mapElement.getValue();
+
+            taskLogger.info("The existing member ID is " + entry.toString());
+        }
+
         // Not sure here but I think we are getting the group details provided by the feed, and extracting the user IDs...
         final Collection<Member> members = group.getMembers();
         final Set<String> feedMembers = Sets.newHashSetWithExpectedSize(members != null ? members.size() : 1);
+
+
+        taskLogger.info("Group members provided by the feed");
         if (members != null) {
             for (Member member : members) {
                 feedMembers.add(member.getUserId());
+
+                taskLogger.info("member ID : " + member.getUserId());
             }
         }
 
         if (group.getLeaderId() != null && !group.getLeaderId().isEmpty()) {
+            taskLogger.info("Add group leader");
             feedMembers.add(group.getLeaderId());
         }
 
         Set<Id> membersToAdd = new HashSet<>();
         Set<Id> membersUpdated = new HashSet<>();
 
+        taskLogger.info("Iterate through feed members");
         for (String feedMember : feedMembers) {
+            taskLogger.info("Finding feed member's user ID");
             final User user;
             try {
                 user = bbUserService.getByExternalSystemId(feedMember, courseId);
             } catch (ExecutionException e) {
+                taskLogger.info("Something went wrong getting the user");
                 taskLogger.warning(resourceService.getLocalisationString("bond.classgroups.warning.couldnotloaduser",
                         feedMember, group.getCourseId(), group.getGroupId()), e);
                 continue;
             }
 
             if (user == null) {
+                taskLogger.info("User is null");
                 taskLogger.warning(resourceService.getLocalisationString("bond.classgroups.warning.couldnotloaduser",
                         feedMember, group.getCourseId(), group.getGroupId()));
                 continue;
@@ -228,12 +250,14 @@ public class BbGroupManager implements GroupManager {
             try {
                 membership = bbCourseMembershipService.getByCourseIdAndUserId(courseId, user.getId());
             } catch (ExecutionException e) {
+                taskLogger.info("Could not find the group membership ID");
                 taskLogger.warning(resourceService.getLocalisationString("bond.classgroups.warning.couldnotloadcousemember",
                         feedMember, group.getCourseId(), group.getGroupId()), e);
                 continue;
             }
 
             if (membership == null) {
+                taskLogger.info("The membership found is null");
                 taskLogger.warning(resourceService.getLocalisationString("bond.classgroups.warning.couldnotloadcousemember",
                         feedMember, group.getCourseId(), group.getGroupId()));
                 continue;
@@ -244,11 +268,13 @@ public class BbGroupManager implements GroupManager {
             boolean foundInExisting = false;
 
             if (existingGroupMembers.containsKey(membershipId)) {
+                taskLogger.info("The member is foudn in the group " + membershipId.toString());
                 foundInExisting = true;
                 existingGroupMembers.remove(membershipId);
             }
 
             if (!foundInExisting) {
+                taskLogger.info("Member " + membershipId.toString() + " not found in group. Adding it");
                 status = Status.UPDATED;
                 membersToAdd.add(membershipId);
             }
@@ -257,6 +283,14 @@ public class BbGroupManager implements GroupManager {
         }
 
         if (!membersToAdd.isEmpty()) {
+            taskLogger.info("Members to add is not empty");
+            status = Status.UPDATED;
+        } else {
+            taskLogger.info("Members to add is empty");
+        }
+
+        // If existing group member isn't empty, we must have users we need to delete
+        if (!existingGroupMembers.isEmpty()) {
             status = Status.UPDATED;
         }
 
@@ -286,9 +320,20 @@ public class BbGroupManager implements GroupManager {
                 }
 
                 // TODO: Need to tidy up the try catch below
+                // DEBUG: LIST THE EXISTING GROUP MEMBERS HERE
+                Iterator egmIterator2 = existingGroupMembers.entrySet().iterator();
+
+                taskLogger.info("Existing Group Members Just Before Deletion");
+
+                while (egmIterator2.hasNext()) {
+                    Map.Entry mapElement = (Map.Entry) egmIterator2.next();
+                    Id entry = (Id) mapElement.getValue();
+
+                    taskLogger.info("The existing member ID is " + entry.toString());
+                }
+
                 try {
-                    // Delete members
-                    bbGroupService.deleteMembers(bbGroup, (Set) existingGroupMembers.values());
+                    bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
                 } catch (PersistenceException e) {
                     e.printStackTrace();
                 }
