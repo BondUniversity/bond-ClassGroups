@@ -295,6 +295,7 @@ public class BbGroupManager implements GroupManager {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
                 return Status.ERROR;
+            }
         }
 
         Long internalId = ((PkId) bbGroup.getId()).getKey();
