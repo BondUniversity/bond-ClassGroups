@@ -4,7 +4,7 @@
         <name value="b2.name"/>
         <handle value="ClassGroups"/>
         <description value="b2.description"/>
-        <version value="3.0.3"/>
+        <version value="3.0.4"/>
         <requires>
             <bbversion value="9.1"/>
         </requires>
