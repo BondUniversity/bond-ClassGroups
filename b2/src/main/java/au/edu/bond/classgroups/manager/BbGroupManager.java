@@ -171,14 +171,34 @@ public class BbGroupManager implements GroupManager {
             }
         }
 
+        try {
+            bbGroupService.createOrUpdate(bbGroup);
+        } catch (ExecutionException e) {
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.getgroupinfofromcache", group.getGroupId()), e);
+            return Status.ERROR;
+        } catch (PersistenceException e) {
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
+            return Status.ERROR;
+        } catch (ValidationException e) {
+            taskLogger.warning(resourceService.getLocalisationString(
+                    "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
+            return Status.ERROR;
+        }
+
+
         final List<GroupMembership> groupMemberships = bbGroup.getGroupMemberships();
-        HashSet<Id> existingGroupMembers = Sets.newHashSetWithExpectedSize(groupMemberships.size());
+        HashMap<Id, Id> existingGroupMembers = new HashMap<>();
+
         for (GroupMembership groupMembership : groupMemberships) {
-            existingGroupMembers.add(groupMembership.getCourseMembershipId());
+            existingGroupMembers.put(groupMembership.getCourseMembershipId(), groupMembership.getId());
         }
 
         final Collection<Member> members = group.getMembers();
         final Set<String> feedMembers = Sets.newHashSetWithExpectedSize(members != null ? members.size() : 1);
+
+
         if (members != null) {
             for (Member member : members) {
                 feedMembers.add(member.getUserId());
@@ -189,10 +209,12 @@ public class BbGroupManager implements GroupManager {
             feedMembers.add(group.getLeaderId());
         }
 
-        Set<Id> memberIds = new HashSet<>();
+        Set<Id> membersToAdd = new HashSet<>();
+        Set<Id> membersUpdated = new HashSet<>();
 
         for (String feedMember : feedMembers) {
             final User user;
+
             try {
                 user = bbUserService.getByExternalSystemId(feedMember, courseId);
             } catch (ExecutionException e) {
@@ -222,14 +244,27 @@ public class BbGroupManager implements GroupManager {
                 continue;
             }
 
+            // If the member that is in the feed, is already in the group, prepare to remove them from the group...
             final Id membershipId = membership.getId();
-            final boolean foundInExisting = existingGroupMembers.remove(membershipId);
+            boolean foundInExisting = false;
+
+            if (existingGroupMembers.containsKey(membershipId)) {
+                foundInExisting = true;
+
+                existingGroupMembers.remove(membershipId);
+            }
 
             if (!foundInExisting) {
                 status = Status.UPDATED;
+
+                membersToAdd.add(membershipId);
             }
 
-            memberIds.add(membershipId);
+            membersUpdated.add(membershipId);
+        }
+
+        if (!membersToAdd.isEmpty()) {
+            status = Status.UPDATED;
         }
 
         if (!existingGroupMembers.isEmpty()) {
@@ -242,16 +277,17 @@ public class BbGroupManager implements GroupManager {
                 if (status == Status.CREATED) {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.creatinggroupdebug",
-                            group.getGroupId(), group.getCourseId(), bbGroup.getTitle(), memberIds.size()));
+                            group.getGroupId(), group.getCourseId(), bbGroup.getTitle(), membersUpdated.size()));
                 } else if (status == Status.UPDATED) {
                     taskLogger.info(resourceService.getLocalisationString(
                             "bond.classgroups.info.updatinggroupdebug",
-                            group.getGroupId(), bbGroup.getId().toExternalString(), group.getCourseId(), courseId.toExternalString(), bbGroup.getTitle(), memberIds.size()));
+                            group.getGroupId(), bbGroup.getId().toExternalString(), group.getCourseId(), courseId.toExternalString(), bbGroup.getTitle(), membersUpdated.size()));
                 }
             }
 
             try {
-                bbGroupService.createOrUpdate(bbGroup, memberIds);
+                bbGroupService.addMembers(bbGroup, membersToAdd);
+                bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
             } catch (ExecutionException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
@@ -259,6 +295,10 @@ public class BbGroupManager implements GroupManager {
             } catch (PersistenceException | PersistenceRuntimeException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
+                return Status.ERROR;
+            } catch (ValidationException e) {
+                taskLogger.warning(resourceService.getLocalisationString(
+                        "bond.classgroups.warning.dataobjecthasinvalidorcorruptdata", group.getGroupId()), e);
                 return Status.ERROR;
             }
         }
