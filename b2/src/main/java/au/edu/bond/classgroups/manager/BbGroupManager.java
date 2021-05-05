@@ -288,10 +288,6 @@ public class BbGroupManager implements GroupManager {
             try {
                 bbGroupService.addMembers(bbGroup, membersToAdd);
                 bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
-            } catch (ExecutionException e) {
-                taskLogger.warning(resourceService.getLocalisationString(
-                        "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
-                return Status.ERROR;
             } catch (PersistenceException | PersistenceRuntimeException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
