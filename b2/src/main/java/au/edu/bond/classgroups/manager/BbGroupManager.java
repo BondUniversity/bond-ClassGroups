@@ -17,6 +17,7 @@ import blackboard.data.course.GroupMembership;
 import blackboard.data.user.User;
 import blackboard.persist.Id;
 import blackboard.persist.PersistenceException;
+import blackboard.persist.PersistenceRuntimeException;
 import blackboard.persist.PkId;
 import com.alltheducks.configutils.service.ConfigurationService;
 import com.google.common.collect.Lists;
@@ -287,7 +288,11 @@ public class BbGroupManager implements GroupManager {
             try {
                 bbGroupService.addMembers(bbGroup, membersToAdd);
                 bbGroupService.deleteMembers(bbGroup, new HashSet<Id>(existingGroupMembers.values()));
-            } catch (PersistenceException e) {
+            } catch (ExecutionException e) {
+                taskLogger.warning(resourceService.getLocalisationString(
+                        "bond.classgroups.warning.groupexecution", group.getGroupId()), e);
+                return Status.ERROR;
+            } catch (PersistenceException | PersistenceRuntimeException e) {
                 taskLogger.warning(resourceService.getLocalisationString(
                         "bond.classgroups.warning.groupbberrors", group.getGroupId()), e);
                 return Status.ERROR;
